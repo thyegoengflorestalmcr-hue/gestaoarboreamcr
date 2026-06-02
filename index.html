@@ -4,15 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
     <title>Coletor de Campo | MCR-PR</title>
-    <link href="tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="leaflet.css">
+    <!-- Tailwind CSS Oficial via CDN Play (Garante design impecável e dinâmico) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Leaflet CSS Oficial via CDN -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- FontAwesome Oficial via CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="exif.js"></script>
-    <script src="supabase.min.js"></script>
-    <script src="../config.js"></script>
+    
+    <!-- Dependências de Scripts via CDNs Públicas de Alta Performance -->
+    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Configurações de Acesso ao Supabase Embutidas diretamente no aplicativo -->
+    <script>
+        const CONFIG = {
+            SUPABASE_URL: "https://uhkidqhulrihwmousasa.supabase.co",
+            SUPABASE_KEY: "sb_publishable_1LwOsuhr7AGUNgomM3IEqA_gZlezYY5"
+        };
+    </script>
+    
+    <!-- Scripts de Dados Locais do Município -->
     <script src="protocolos_mcr.js"></script>
     <script src="bairros_mcr.js"></script>
-    <script src="leaflet.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
