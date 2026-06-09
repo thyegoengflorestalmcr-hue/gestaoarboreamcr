@@ -806,7 +806,7 @@
                 </button>
 
                 <!-- Gaveta de Legenda Deslizante (Design iOS Premium e Minimalista) -->
-                <div id="legenda-gaveta" class="absolute left-0 right-0 bg-white border-t border-slate-200 shadow-[0_-10px_30px_rgba(0,0,0,0.12)] rounded-t-3xl p-4 font-sans text-slate-800" style="bottom: -500px; z-index: 9999; transition: bottom 0.35s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: auto;">
+                <div id="legenda-gaveta" class="absolute left-0 right-0 bg-white border-t border-slate-200 shadow-[0_-10px_30px_rgba(0,0,0,0.12)] rounded-t-3xl p-4 font-sans text-slate-800" style="bottom: 0; transform: translateY(100%); z-index: 9999; transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: auto;">
                     
                     <!-- Barra de Controle Superior (Estilo App Nativo iOS/Android) -->
                     <div class="flex flex-col items-center mb-3.5">
@@ -7980,13 +7980,13 @@ supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY)
             const btn = document.getElementById('btn-abrir-legenda');
             if (gaveta) {
                 if (abrir) {
-                    gaveta.style.bottom = '0';
+                    gaveta.style.transform = 'translateY(0)';
                     if (btn) {
                         btn.style.opacity = '0';
                         btn.style.pointerEvents = 'none';
                     }
                 } else {
-                    gaveta.style.bottom = '-500px';
+                    gaveta.style.transform = 'translateY(100%)';
                     if (btn) {
                         btn.style.opacity = '1';
                         btn.style.pointerEvents = 'auto';
