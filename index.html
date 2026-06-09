@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <!-- Metadados PWA para rodar em Tela Cheia Standalone (Estilo Alpine Quest) -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#022c22">
     <title>Coletor de Campo | MCR-PR</title>
     <!-- Tailwind CSS Oficial via CDN Play (Garante design impecável e dinâmico) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -667,6 +672,23 @@
             text-align: center;
             font-style: italic;
         }
+
+        /* Ajuste de Safe Area para Evitar que Botões Virtuais do Celular Cubram os Controles */
+        @supports (padding: env(safe-area-inset-bottom)) {
+            #btn-gps-centralizar {
+                bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+            }
+            #btn-abrir-legenda {
+                bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+            }
+            #legenda-gaveta {
+                padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+            }
+            #barra-subabas-vistoria {
+                padding-bottom: env(safe-area-inset-bottom) !important;
+                height: calc(56px + env(safe-area-inset-bottom)) !important;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen pb-24">
@@ -689,6 +711,10 @@
                 </div>
             </div>
             <div class="flex items-center space-x-2">
+                <!-- Botão de Tela Cheia no Header -->
+                <button type="button" onclick="alternarTelaCheia()" class="bg-emerald-800 hover:bg-emerald-950 text-white p-2.5 rounded-full flex items-center justify-center transition-all" title="Alternar Tela Cheia" style="width: 44px; height: 44px;">
+                    <i class="fas fa-expand text-sm header-fullscreen-icon"></i>
+                </button>
                 <button type="button" onclick="alternarModoSol()" class="bg-emerald-800 hover:bg-emerald-950 text-white p-2 rounded-full flex items-center justify-center transition-all" title="Alternar Modo Sol/Sombra" style="width: 44px; height: 44px;">
                     <i class="fas fa-sun text-sm"></i>
                 </button>
@@ -764,6 +790,11 @@
                     </div>
                 </div>
 
+                <!-- Botão Flutuante de Tela Cheia no Mapa (Posicionado no Canto Superior Direito livre) -->
+                <button type="button" id="btn-mapa-fullscreen" onclick="alternarTelaCheia()" class="absolute bg-white hover:bg-slate-50 text-slate-800 p-3 rounded-full shadow-2xl border border-slate-300 flex items-center justify-center transition-all active:scale-95" style="z-index: 1000; width: 44px; height: 44px; top: 12px; right: 10px;" title="Tela Cheia">
+                    <i class="fas fa-expand text-base text-blue-600 map-fullscreen-icon"></i>
+                </button>
+
                 <!-- Botão Flutuante de Centralizar GPS (Posicionado sobre o mapa) -->
                 <button type="button" id="btn-gps-centralizar" onclick="centralizarMapaNoUsuario()" class="absolute bottom-4 right-4 bg-white hover:bg-slate-50 text-slate-800 p-3.5 rounded-full shadow-2xl border border-slate-300 flex items-center justify-center transition-all active:scale-95" style="z-index: 1000; width: 48px; height: 48px;">
                     <i class="fas fa-crosshairs text-lg text-blue-600"></i>
@@ -774,31 +805,37 @@
                     <i class="fas fa-list-ul text-blue-600"></i> LEGENDA
                 </button>
 
-                <!-- Gaveta de Legenda Deslizante (Slide Up BottomSheet Branco Sólido e Opaco) -->
-                <div id="legenda-gaveta" class="absolute left-0 right-0 bg-white border-t border-slate-300 shadow-[0_-8px_30px_rgba(0,0,0,0.15)] rounded-t-2xl p-4 font-sans text-slate-800" style="bottom: -450px; z-index: 9999; transition: bottom 0.3s ease-in-out; pointer-events: auto;">
-                    <!-- Barra de Controle Superior da Gaveta (Linha de toque + Botão de Minimizar de Alta Visibilidade) -->
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-1.5 text-xxs font-bold text-slate-500 uppercase tracking-wider">
-                            <i class="fas fa-map-marked-alt text-blue-600"></i> Painel do Mapa
+                <!-- Gaveta de Legenda Deslizante (Design iOS Premium e Minimalista) -->
+                <div id="legenda-gaveta" class="absolute left-0 right-0 bg-white border-t border-slate-200 shadow-[0_-10px_30px_rgba(0,0,0,0.12)] rounded-t-3xl p-4 font-sans text-slate-800" style="bottom: -500px; z-index: 9999; transition: bottom 0.35s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: auto;">
+                    
+                    <!-- Barra de Controle Superior (Estilo App Nativo iOS/Android) -->
+                    <div class="flex flex-col items-center mb-3.5">
+                        <!-- Indicador de Toque (Drag Handle) -->
+                        <div class="w-10 h-1 bg-slate-200 hover:bg-slate-300 rounded-full cursor-pointer transition-colors" onclick="toggleLegendaGaveta(false)" title="Minimizar"></div>
+                        
+                        <div class="w-full flex items-center justify-between mt-2 px-1">
+                            <span class="flex items-center gap-1.5 text-xs font-black text-slate-800 uppercase tracking-wide">
+                                <i class="fas fa-info-circle text-emerald-600"></i> Painel do Mapa
+                            </span>
+                            <!-- Botão de Fechar Minimalista e Elegante -->
+                            <button type="button" onclick="toggleLegendaGaveta(false)" class="flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-600 p-1.5 rounded-full border border-slate-100 transition-all active:scale-90 cursor-pointer w-7 h-7" title="Minimizar">
+                                <i class="fas fa-times text-xs"></i>
+                            </button>
                         </div>
-                        <div class="w-12 h-1 bg-slate-300 hover:bg-slate-400 rounded-full cursor-pointer transition-colors" onclick="toggleLegendaGaveta(false)" title="Minimizar"></div>
-                        <button type="button" onclick="toggleLegendaGaveta(false)" class="flex items-center justify-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-1.5 rounded-lg text-xxs border border-slate-300 transition-all active:scale-95 cursor-pointer shadow-sm" style="min-height: 30px;">
-                            <i class="fas fa-chevron-down text-slate-500"></i> Minimizar
-                        </button>
                     </div>
                     
-                    <!-- Cabeçalho com Abas/Submenus Estilo AlpineQuest -->
-                    <div class="flex border-b border-slate-200 mb-3 text-xxs font-bold uppercase tracking-wider">
-                        <button type="button" onclick="switchSubAbaLegenda('legenda')" id="btn-subaba-legenda" class="flex-1 py-2.5 text-center border-b-2 border-blue-600 text-blue-600 font-bold cursor-pointer transition-all flex items-center justify-center gap-1 bg-transparent border-none">
+                    <!-- Seletor de Abas Estilo Controle Segmentado iOS -->
+                    <div class="flex bg-slate-100 p-1 rounded-xl mb-4 text-[10px] font-bold uppercase tracking-wider">
+                        <button type="button" onclick="switchSubAbaLegenda('legenda')" id="btn-subaba-legenda" class="flex-1 py-2 rounded-lg text-blue-700 bg-white shadow-sm font-bold cursor-pointer transition-all flex items-center justify-center gap-1.5 border-none">
                             <i class="fas fa-list-ul"></i> Legenda
                         </button>
-                        <button type="button" onclick="switchSubAbaLegenda('ajustes')" id="btn-subaba-ajustes" class="flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 font-bold cursor-pointer transition-all flex items-center justify-center gap-1 bg-transparent border-none">
+                        <button type="button" onclick="switchSubAbaLegenda('ajustes')" id="btn-subaba-ajustes" class="flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-700 font-medium cursor-pointer transition-all flex items-center justify-center gap-1.5 bg-transparent border-none">
                             <i class="fas fa-sliders-h"></i> Ajustes
                         </button>
-                        <button type="button" onclick="switchSubAbaLegenda('offline')" id="btn-subaba-offline" class="flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 font-bold cursor-pointer transition-all flex items-center justify-center gap-1 bg-transparent border-none">
+                        <button type="button" onclick="switchSubAbaLegenda('offline')" id="btn-subaba-offline" class="flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-700 font-medium cursor-pointer transition-all flex items-center justify-center gap-1.5 bg-transparent border-none">
                             <i class="fas fa-download"></i> Offline
                         </button>
-                        <button type="button" onclick="switchSubAbaLegenda('sincronia')" id="btn-subaba-sincronia" class="flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 font-bold cursor-pointer transition-all flex items-center justify-center gap-1 bg-transparent border-none">
+                        <button type="button" onclick="switchSubAbaLegenda('sincronia')" id="btn-subaba-sincronia" class="flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-700 font-medium cursor-pointer transition-all flex items-center justify-center gap-1.5 bg-transparent border-none">
                             <i class="fas fa-sync"></i> Sincronia
                         </button>
                     </div>
@@ -806,164 +843,247 @@
                     <!-- CONTEÚDO DAS SUB-ABAS -->
                     
                     <!-- 1. ABA LEGENDA -->
-                    <div id="subaba-content-legenda" class="space-y-3.5 text-slate-800 text-[10px] leading-relaxed max-h-[60vh] overflow-y-auto">
+                    <div id="subaba-content-legenda" class="space-y-4 text-slate-800 text-[10px] leading-relaxed max-h-[50vh] overflow-y-auto pr-1">
                         <div>
-                            <strong class="block text-slate-700 text-xxs mb-1.5 flex items-center gap-1 uppercase font-bold">
-                                <i class="fas fa-info-circle text-emerald-700"></i> Marcadores (Sincronização)
+                            <strong class="block text-slate-500 text-[9px] uppercase tracking-wider font-bold mb-2">
+                                Marcadores no Mapa (Status de Envio)
                             </strong>
-                            <div class="grid grid-cols-3 gap-1.5 text-center font-bold text-[9px] mb-2">
-                                <div class="p-1.5 rounded flex items-center justify-center gap-1" style="background-color: #fee2e2; color: #991b1b;"><i class="fas fa-file-invoice"></i> Pendentes</div>
-                                <div class="p-1.5 rounded flex items-center justify-center gap-1" style="background-color: #fef3c7; color: #92400e;"><span class="w-2.5 h-2.5 rounded-full inline-block" style="background:#f59e0b; border: 1.5px solid white; box-shadow: 0 1px 2px rgba(0,0,0,0.2);"></span> Fila Celular</div>
-                                <div class="p-1.5 rounded flex items-center justify-center gap-1" style="background-color: #d1fae5; color: #065f46;"><span class="w-2.5 h-2.5 rounded-full inline-block" style="background:#10b981; border: 1.5px solid white; box-shadow: 0 1px 2px rgba(0,0,0,0.2);"></span> Enviados</div>
+                            
+                            <!-- Grid de Status Minimalista Premium -->
+                            <div class="grid grid-cols-3 gap-2 mb-2.5">
+                                <!-- Pendentes -->
+                                <div class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-50 border border-slate-100 shadow-sm text-center">
+                                    <div class="w-8 h-8 rounded-full bg-red-50 border border-red-100 flex items-center justify-center mb-1 flex-shrink-0 text-red-500">
+                                        <i class="fas fa-file-invoice text-xs"></i>
+                                    </div>
+                                    <span class="font-bold text-slate-850 text-[9.5px]">Pendentes</span>
+                                    <span class="text-[8px] text-slate-400 font-medium leading-tight mt-0.5">Laudo em Aberto</span>
+                                </div>
+                                <!-- Fila Celular -->
+                                <div class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-50 border border-slate-100 shadow-sm text-center">
+                                    <div class="w-8 h-8 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center mb-1 flex-shrink-0 text-amber-500">
+                                        <i class="fas fa-camera text-xs"></i>
+                                    </div>
+                                    <span class="font-bold text-slate-850 text-[9.5px]">Fila Local</span>
+                                    <span class="text-[8px] text-slate-400 font-medium leading-tight mt-0.5">Fila no Aparelho</span>
+                                </div>
+                                <!-- Enviados -->
+                                <div class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-50 border border-slate-100 shadow-sm text-center">
+                                    <div class="w-8 h-8 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center mb-1 flex-shrink-0 text-emerald-500">
+                                        <i class="fas fa-cloud-upload-alt text-xs"></i>
+                                    </div>
+                                    <span class="font-bold text-slate-850 text-[9.5px]">Sincronizados</span>
+                                    <span class="text-[8px] text-slate-400 font-medium leading-tight mt-0.5">Salvo na Nuvem</span>
+                                </div>
                             </div>
-                            <p class="text-[9px] text-slate-500 leading-snug">
-                                <b>Pendentes:</b> Marcador vermelho (folha). <b>Fila Celular:</b> Foto salva localmente (bolinha amarela). <b>Enviados:</b> Sincronizados na nuvem (bolinha verde).
-                            </p>
+                            
+                            <div class="p-2.5 rounded-xl bg-blue-50/50 border border-blue-100/60 text-[9.5px] text-slate-650 leading-snug">
+                                <b class="text-blue-900">Como funciona:</b> Marcadores de folha vermelha no mapa estão <span class="font-bold text-red-700">Pendentes</span> de vistoria técnica. Ao vistoriar e salvar localmente, o ponto vira um círculo amarelo (<span class="font-bold text-amber-700">Fila Local</span>). Após sincronizar com a internet, o círculo fica verde (<span class="font-bold text-emerald-700">Sincronizado</span>).
+                            </div>
                         </div>
-                        <div class="border-t border-slate-100 pt-2">
-                            <strong class="block text-slate-700 text-xxs mb-1.5 flex items-center gap-1 uppercase font-bold">
-                                <i class="fas fa-palette text-emerald-700"></i> Cores das Bordas (Manejo Recomendado)
+                        
+                        <div class="border-t border-slate-100 pt-3">
+                            <strong class="block text-slate-500 text-[9px] uppercase tracking-wider font-bold mb-2">
+                                Cores das Bordas (Manejo Recomendado)
                             </strong>
-                            <div class="grid grid-cols-4 gap-1 text-center font-bold text-[8px] text-white mb-2">
-                                <div class="py-1 px-0.5 rounded" style="background-color: #10b981;">Permanência</div>
-                                <div class="py-1 px-0.5 rounded" style="background-color: #f59e0b;">Manejo / Poda</div>
-                                <div class="py-1 px-0.5 rounded" style="background-color: #ef4444;">Supressão</div>
-                                <div class="py-1 px-0.5 rounded text-slate-700" style="background-color: #e2e8f0; border: 1px solid #cbd5e1;">Indefinido</div>
+                            
+                            <!-- Badges de Recomendação Técnica -->
+                            <div class="grid grid-cols-2 gap-2 mb-2">
+                                <!-- Permanência -->
+                                <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100 hover:border-emerald-200 transition-all">
+                                    <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white shadow flex-shrink-0"></span>
+                                    <div class="flex flex-col">
+                                        <span class="font-black text-slate-800 text-[9.5px]">Permanência</span>
+                                        <span class="text-[8px] text-slate-400 font-medium">Árvore preservada</span>
+                                    </div>
+                                </div>
+                                <!-- Poda -->
+                                <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100 hover:border-amber-200 transition-all">
+                                    <span class="w-3.5 h-3.5 rounded-full bg-amber-500 border-2 border-white shadow flex-shrink-0"></span>
+                                    <div class="flex flex-col">
+                                        <span class="font-black text-slate-800 text-[9.5px]">Manejo / Poda</span>
+                                        <span class="text-[8px] text-slate-400 font-medium">Galhos ou limpeza</span>
+                                    </div>
+                                </div>
+                                <!-- Supressão -->
+                                <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100 hover:border-red-200 transition-all">
+                                    <span class="w-3.5 h-3.5 rounded-full bg-red-500 border-2 border-white shadow flex-shrink-0"></span>
+                                    <div class="flex flex-col">
+                                        <span class="font-black text-slate-800 text-[9.5px]">Supressão</span>
+                                        <span class="text-[8px] text-slate-400 font-medium">Corte recomendado</span>
+                                    </div>
+                                </div>
+                                <!-- Indefinido -->
+                                <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100 transition-all">
+                                    <span class="w-3.5 h-3.5 rounded-full bg-slate-400 border-2 border-white shadow flex-shrink-0"></span>
+                                    <div class="flex flex-col">
+                                        <span class="font-black text-slate-800 text-[9.5px]">Indefinido</span>
+                                        <span class="text-[8px] text-slate-400 font-medium">Sem dados ainda</span>
+                                    </div>
+                                </div>
                             </div>
-                            <p class="text-[9px] text-slate-500 leading-snug">A cor da borda representa o status de recomendação técnica final calculada pelo laudo.</p>
+                            <p class="text-[9px] text-slate-400 font-medium leading-snug">A cor da borda externa do marcador no mapa representa a recomendação técnica preliminar calculada pelo laudo.</p>
                         </div>
-                        <div class="border-t border-slate-100 pt-2 text-[9px] text-slate-500 flex items-center gap-2">
+                        
+                        <div class="border-t border-slate-100 pt-3 text-[9px] text-slate-500 flex items-center gap-2.5 bg-slate-50 p-2.5 rounded-xl border border-slate-150">
                             <span class="relative flex h-2.5 w-2.5 flex-shrink-0">
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                                 <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
                             </span>
-                            <span>O ponto azul pulsante mostra sua localização. Clique em qualquer marcador para ver seus dados cadastrais.</span>
+                            <span class="font-semibold text-slate-650 leading-snug">O ponto azul pulsante mostra sua localização real. Toque em qualquer árvore no mapa para abrir seus dados cadastrais.</span>
                         </div>
                     </div>
 
                     <!-- 2. ABA AJUSTES -->
-                    <div id="subaba-content-ajustes" class="hidden space-y-3.5 text-slate-800 text-[10px] max-h-[60vh] overflow-y-auto pr-1">
+                    <div id="subaba-content-ajustes" class="hidden space-y-4 text-slate-800 text-[10px] max-h-[50vh] overflow-y-auto pr-1">
                         <!-- Precisão GPS -->
-                        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center justify-between">
-                            <span class="font-bold text-slate-700 flex items-center gap-1">
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between shadow-sm">
+                            <span class="font-bold text-slate-700 flex items-center gap-1.5 text-[9.5px]">
                                 <i class="fas fa-satellite-dish text-blue-600"></i> Sinal do GPS:
                             </span>
-                            <span id="gps-accuracy-container" class="flex items-center gap-1 font-bold text-slate-600">
-                                <i id="gps-accuracy-icon" class="fas fa-circle text-red-500 text-[9px]"></i>
-                                <span id="gps-accuracy-text">Buscando sinal GPS...</span>
+                            <span id="gps-accuracy-container" class="flex items-center gap-1 font-bold text-slate-650">
+                                <i id="gps-accuracy-icon" class="fas fa-circle text-red-500 text-[9px] mr-1"></i>
+                                <span id="gps-accuracy-text" class="text-xs font-bold text-red-650">Buscando sinal GPS...</span>
                             </span>
                         </div>
 
-                        <!-- Alternador de Camada Satélite/Mapa -->
+                        <!-- Alternador de Camada Satélite/Mapa (Cartões Visuais Premium) -->
                         <div>
-                            <span class="block font-bold text-slate-700 mb-1.5 uppercase text-[9px] tracking-wider">Modo de Exibição do Mapa:</span>
-                            <div class="flex gap-2">
-                                <button type="button" onclick="alterarCamadaMapa('sat'); document.getElementById('btn-sub-map-sat').className='flex-1 font-bold py-2 rounded-lg text-xxs shadow text-center text-white bg-emerald-700'; document.getElementById('btn-sub-map-street').className='flex-1 font-bold py-2 rounded-lg text-xxs shadow text-center text-slate-700 bg-slate-100 border border-slate-200';" id="btn-sub-map-sat" class="flex-1 font-bold py-2 rounded-lg text-xxs shadow text-center text-white bg-emerald-700 border-none cursor-pointer">
-                                    Satélite
+                            <span class="block font-bold text-slate-500 mb-2 uppercase text-[9px] tracking-wider">Modo de Exibição do Mapa</span>
+                            <div class="flex gap-3">
+                                <!-- Satélite -->
+                                <button type="button" id="btn-sub-map-sat" onclick="alterarCamadaMapa('sat'); document.getElementById('btn-sub-map-sat').className='flex-1 flex flex-col items-center gap-1.5 p-2.5 bg-emerald-50 border-2 border-emerald-600 rounded-xl font-bold text-[10px] text-emerald-800 transition-all cursor-pointer shadow-sm'; document.getElementById('btn-sub-map-street').className='flex-1 flex flex-col items-center gap-1.5 p-2.5 bg-white border border-slate-200 rounded-xl font-bold text-[10px] text-slate-600 hover:bg-slate-50 transition-all cursor-pointer';" class="flex-1 flex flex-col items-center gap-1.5 p-2.5 bg-emerald-50 border-2 border-emerald-600 rounded-xl font-bold text-[10px] text-emerald-800 transition-all cursor-pointer shadow-sm">
+                                    <i class="fas fa-globe text-emerald-600 text-sm"></i>
+                                    <span>Satélite Híbrido</span>
                                 </button>
-                                <button type="button" onclick="alterarCamadaMapa('street'); document.getElementById('btn-sub-map-street').className='flex-1 font-bold py-2 rounded-lg text-xxs shadow text-center text-white bg-emerald-700'; document.getElementById('btn-sub-map-sat').className='flex-1 font-bold py-2 rounded-lg text-xxs shadow text-center text-slate-700 bg-slate-100 border border-slate-200';" id="btn-sub-map-street" class="flex-1 font-bold py-2 rounded-lg text-xxs shadow text-center text-slate-700 bg-slate-100 border border-slate-200 cursor-pointer">
-                                    Mapa de Ruas
+                                <!-- Ruas -->
+                                <button type="button" id="btn-sub-map-street" onclick="alterarCamadaMapa('street'); document.getElementById('btn-sub-map-street').className='flex-1 flex flex-col items-center gap-1.5 p-2.5 bg-emerald-50 border-2 border-emerald-600 rounded-xl font-bold text-[10px] text-emerald-800 transition-all cursor-pointer shadow-sm'; document.getElementById('btn-sub-map-sat').className='flex-1 flex flex-col items-center gap-1.5 p-2.5 bg-white border border-slate-200 rounded-xl font-bold text-[10px] text-slate-600 hover:bg-slate-50 transition-all cursor-pointer';" class="flex-1 flex flex-col items-center gap-1.5 p-2.5 bg-white border border-slate-200 rounded-xl font-bold text-[10px] text-slate-600 hover:bg-slate-50 transition-all cursor-pointer shadow-sm">
+                                    <i class="fas fa-map text-slate-500 text-sm"></i>
+                                    <span>Mapa de Ruas</span>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Sliders de Configuração -->
-                        <div class="space-y-3 border-t border-slate-100 pt-2.5">
+                        <!-- Sliders de Configuração (Visual Minimalista Premium) -->
+                        <div class="space-y-3.5 border-t border-slate-100 pt-3">
                             <div>
-                                <label class="block font-bold text-slate-700 mb-1 flex justify-between uppercase text-[9px] tracking-wider">
-                                    <span>Raio de Busca (Pendentes):</span>
+                                <label class="block font-bold text-slate-600 mb-1 flex justify-between uppercase text-[9px] tracking-wider">
+                                    <span>Raio de Busca (Processos):</span>
                                     <span id="lblRaioBusca" class="text-emerald-700 font-bold">1.5 km</span>
                                 </label>
                                 <input type="range" id="sliderRaioBusca" min="0.5" max="5.0" step="0.5" value="1.5" class="mcr-slider w-full" oninput="alterarRaioBusca(this.value)">
+                                <div class="flex justify-between text-[8px] text-slate-400 font-semibold mt-0.5">
+                                    <span>0.5 km</span>
+                                    <span>5.0 km</span>
+                                </div>
                             </div>
+                            
                             <div>
-                                <label class="block font-bold text-slate-700 mb-1 flex justify-between uppercase text-[9px] tracking-wider">
+                                <label class="block font-bold text-slate-600 mb-1 flex justify-between uppercase text-[9px] tracking-wider">
                                     <span>Qualidade das Imagens (JPEG):</span>
                                     <span id="lblQualidadeFoto" class="text-emerald-700 font-bold">85%</span>
                                 </label>
                                 <input type="range" id="sliderQualidade" min="50" max="100" step="5" value="85" class="mcr-slider w-full" oninput="alterarQualidadeCompressao(this.value)">
+                                <div class="flex justify-between text-[8px] text-slate-400 font-semibold mt-0.5">
+                                    <span>50% (Rápido/Compacto)</span>
+                                    <span>100% (Alta Qualidade)</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- 3. ABA OFFLINE -->
-                    <div id="subaba-content-offline" class="hidden space-y-3.5 text-slate-800 text-[10px] max-h-[60vh] overflow-y-auto">
-                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
-                            <span class="block font-bold text-slate-700 flex items-center gap-1.5 uppercase text-[9px] tracking-wider">
-                                <i class="fas fa-download text-blue-600"></i> Baixar Imagem de Satélite
+                    <div id="subaba-content-offline" class="hidden space-y-4 text-slate-800 text-[10px] max-h-[50vh] overflow-y-auto">
+                        <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-3 shadow-sm">
+                            <span class="block font-black text-slate-800 flex items-center gap-1.5 uppercase text-[9.5px] tracking-wide">
+                                <i class="fas fa-download text-teal-600"></i> Baixar Satélite Offline
                             </span>
-                            <p class="text-slate-500 leading-snug text-[9px]">
-                                Permite baixar a área visível do mapa atual para que a imagem de satélite continue funcionando em campo, mesmo sem qualquer conexão de internet.
+                            <p class="text-slate-500 leading-normal text-[9px] font-medium">
+                                Permite baixar as imagens de satélite correspondentes à área visível atual no seu mapa. Assim, ao trabalhar em áreas sem cobertura de internet, o mapa de fundo continuará visível e funcional no aparelho.
                             </p>
                             
                             <!-- Botão de Ação -->
-                            <button type="button" id="btn-download-mapa-offline" onclick="iniciarDownloadMapaOffline()" class="w-full text-white font-bold p-2.5 rounded-lg transition-all text-xxs flex items-center justify-center gap-1.5 shadow-md border-none cursor-pointer" style="background-color: #0d9488;">
-                                <i class="fas fa-download"></i> Baixar Área do Mapa Atual
+                            <button type="button" id="btn-download-mapa-offline" onclick="iniciarDownloadMapaOffline()" class="w-full text-white font-bold py-3 px-4 rounded-xl transition-all text-xxs flex items-center justify-center gap-2 shadow-md border-none cursor-pointer bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 active:scale-[0.98]">
+                                <i class="fas fa-download text-xs"></i> Baixar Área de Mapa Atual
                             </button>
 
-                            <!-- Indicador de Progresso -->
-                            <div id="progresso-mapa-offline" class="hidden space-y-1.5 mt-2">
-                                <div class="flex justify-between items-center text-[9px]">
-                                    <span id="txt-progresso-offline" class="font-semibold text-slate-600">Baixando imagens do satélite...</span>
-                                    <span id="lbl-progresso-offline" class="font-bold text-blue-600">0%</span>
+                            <!-- Indicador de Progresso (Visual Clean) -->
+                            <div id="progresso-mapa-offline" class="hidden space-y-2 mt-2 bg-white p-2.5 rounded-xl border border-slate-150">
+                                <div class="flex justify-between items-center text-[9px] font-bold">
+                                    <span id="txt-progresso-offline" class="text-slate-600">Carregando imagens...</span>
+                                    <span id="lbl-progresso-offline" class="text-teal-600">0%</span>
                                 </div>
-                                <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                                    <div id="barra-offline" class="bg-blue-600 h-1.5 rounded-full transition-all duration-100" style="width: 0%;"></div>
+                                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
+                                    <div id="barra-offline" class="bg-gradient-to-r from-teal-500 to-teal-600 h-2 rounded-full transition-all duration-100" style="width: 0%;"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- 4. ABA SINCRONIA -->
-                    <div id="subaba-content-sincronia" class="hidden space-y-3.5 text-slate-800 text-[10px] max-h-[60vh] overflow-y-auto">
-                        <!-- Painel Estatísticas de Sincronia -->
-                        <div class="grid grid-cols-2 gap-2.5 p-2.5 bg-slate-50 rounded-xl border border-slate-200">
-                            <div>
-                                <span class="block text-[8px] font-bold text-slate-400 uppercase tracking-wider">Fila no Celular</span>
-                                <span id="sinc-pendentes-count" class="text-sm font-bold text-slate-700">0 vistorias</span>
+                    <div id="subaba-content-sincronia" class="hidden space-y-4 text-slate-800 text-[10px] max-h-[50vh] overflow-y-auto">
+                        <!-- Painel Estatísticas de Sincronia (Cards Premium) -->
+                        <div class="grid grid-cols-2 gap-3 mb-1">
+                            <!-- Card Fila Local -->
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center flex flex-col items-center justify-center shadow-sm">
+                                <div class="w-6 h-6 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mb-1">
+                                    <i class="fas fa-database text-[10px]"></i>
+                                </div>
+                                <span class="block text-[8px] font-bold text-slate-400 uppercase tracking-wider">Fila Local</span>
+                                <span id="sinc-pendentes-count" class="text-xs font-black text-slate-700 mt-0.5">0 vistorias</span>
                             </div>
-                            <div>
-                                <span class="block text-[8px] font-bold text-slate-400 uppercase tracking-wider">Última Atualização</span>
-                                <span id="sinc-data-hora" class="text-xs font-bold text-slate-700">Não realizada</span>
+                            
+                            <!-- Card Última Sinc -->
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center flex flex-col items-center justify-center shadow-sm">
+                                <div class="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-1">
+                                    <i class="fas fa-clock text-[10px]"></i>
+                                </div>
+                                <span class="block text-[8px] font-bold text-slate-400 uppercase tracking-wider">Último Envio</span>
+                                <span id="sinc-data-hora" class="text-[10px] font-black text-slate-700 mt-0.5">Não realizada</span>
                             </div>
-                            <div class="col-span-2 border-t border-slate-200 pt-1.5 flex justify-between items-center text-[9px]">
-                                <span class="font-bold text-slate-400 uppercase">Sinal de Rede</span>
-                                <span id="sinc-rede-status" class="font-bold text-emerald-600 flex items-center gap-1">
-                                    <i class="fas fa-wifi"></i> Detectando rede...
+                            
+                            <!-- Conexão Badge Completa -->
+                            <div class="col-span-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 flex justify-between items-center text-[9px] shadow-sm">
+                                <span class="font-bold text-slate-500 uppercase tracking-wide">Status da Rede:</span>
+                                <span id="sinc-rede-status" class="font-bold text-emerald-600 flex items-center gap-1.5">
+                                    <i class="fas fa-wifi"></i> Conectado à Internet
                                 </span>
                             </div>
                         </div>
 
-                        <!-- Botões de Envio/Baixar da Nuvem -->
-                        <div class="grid grid-cols-2 gap-2">
-                            <button type="button" onclick="forcarSincroniaEnvio()" class="w-full text-white font-bold p-2.5 rounded-lg transition-all text-xxs flex items-center justify-center gap-1.5 shadow hover:bg-emerald-700 border-none cursor-pointer" style="background-color: #059669;">
-                                <i class="fas fa-upload"></i> Enviar Fila
+                        <!-- Botões de Envio/Baixar da Nuvem (Gradientes Modernos) -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" onclick="forcarSincroniaEnvio()" class="w-full text-white font-bold py-2.5 px-3 rounded-xl transition-all text-xxs flex items-center justify-center gap-1.5 shadow-md border-none cursor-pointer bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 active:scale-[0.98]">
+                                <i class="fas fa-upload text-xs"></i> Enviar Fila
                             </button>
-                            <button type="button" onclick="forcarCargaDados()" class="w-full text-slate-900 font-bold p-2.5 rounded-lg transition-all text-xxs flex items-center justify-center gap-1.5 shadow hover:bg-amber-600 border-none cursor-pointer" style="background-color: #f59e0b; color: #1e293b;">
-                                <i class="fas fa-download"></i> Baixar Dados
+                            <button type="button" onclick="forcarCargaDados()" class="w-full text-white font-bold py-2.5 px-3 rounded-xl transition-all text-xxs flex items-center justify-center gap-1.5 shadow-md border-none cursor-pointer bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-650 hover:to-amber-700 active:scale-[0.98]">
+                                <i class="fas fa-download text-xs"></i> Baixar Dados
                             </button>
                         </div>
 
                         <!-- Fila de Itens no Aparelho -->
-                        <div class="border-t border-slate-100 pt-2">
-                            <strong class="block text-slate-700 text-xxs mb-1.5 flex items-center gap-1 uppercase font-bold">
-                                <i class="fas fa-list-ul text-emerald-700"></i> Fila Local (Gravações no Celular)
+                        <div class="border-t border-slate-150 pt-3">
+                            <strong class="block text-slate-500 text-[9px] uppercase tracking-wider font-bold mb-2">
+                                Registros Salvos no Aparelho
                             </strong>
                             
-                            <!-- Painel de Ações em Lote (Inicialmente Oculto) -->
-                            <div id="painel-lote-sincronia" class="hidden flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-2 mb-2 text-[10px]">
+                            <!-- Painel de Ações em Lote (iOS Style) -->
+                            <div id="painel-lote-sincronia" class="hidden flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-2.5 mb-2.5 text-[9.5px]">
                                 <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
                                     <input type="checkbox" id="chkSelecionarTodosSinc" onchange="toggleSelecionarTodosSinc(this)" class="rounded text-emerald-600 border-slate-300">
                                     <span>Selecionar Todos</span>
                                 </label>
-                                <button type="button" id="btnExcluirLoteSinc" onclick="excluirFilaLote()" disabled class="text-red-700 bg-red-50 hover:bg-red-700 hover:text-white px-2 py-1 rounded-lg border border-red-200 transition-all font-bold cursor-pointer flex items-center gap-1 opacity-50 cursor-not-allowed">
-                                    <i class="fas fa-trash-alt"></i> Excluir (<span id="count-selecionados-sinc">0</span>)
+                                <button type="button" id="btnExcluirLoteSinc" onclick="excluirFilaLote()" disabled class="text-red-700 bg-red-50 hover:bg-red-700 hover:text-white px-2.5 py-1.5 rounded-lg border border-red-200 transition-all font-bold cursor-pointer flex items-center gap-1 opacity-50 cursor-not-allowed">
+                                    <i class="fas fa-trash-alt text-xxs"></i> Excluir (<span id="count-selecionados-sinc">0</span>)
                                 </button>
                             </div>
                             
-                            <div id="listaPendentesContainer" class="space-y-1.5 max-h-[150px] overflow-y-auto pr-1">
-                                <p class="text-[9px] text-slate-400 italic text-center py-2">Nenhuma vistoria pendente de envio.</p>
+                            <div id="listaPendentesContainer" class="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                                <p class="text-[9px] text-slate-400 italic text-center py-3">Nenhuma vistoria pendente de envio.</p>
                             </div>
+                        </div>
+                    </div>
+                </div>          </div>
                         </div>
                     </div>
                 </div>
@@ -3114,7 +3234,7 @@ supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY)
                 }).setView([-24.5562, -54.0566], 15);
                 
                 // Adicionar L.control.zoom de forma compacta em outro local
-                L.control.zoom({ position: 'topright' }).addTo(map);
+                L.control.zoom({ position: 'topleft' }).addTo(map);
                 
                 // Provedor oficial de satélite (Google Híbrido) com suporte offline
                 satLayer = L.tileLayer.offline('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
@@ -7866,7 +7986,7 @@ supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY)
                         btn.style.pointerEvents = 'none';
                     }
                 } else {
-                    gaveta.style.bottom = '-450px';
+                    gaveta.style.bottom = '-500px';
                     if (btn) {
                         btn.style.opacity = '1';
                         btn.style.pointerEvents = 'auto';
@@ -7874,6 +7994,54 @@ supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY)
                 }
             }
         }
+
+        // --- SISTEMA DE TELA CHEIA (FULLSCREEN) ESTILO ALPINE QUEST ---
+        function alternarTelaCheia() {
+            const docEl = document.documentElement;
+            if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
+                const requestFS = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.mozRequestFullScreen || docEl.msRequestFullscreen;
+                if (requestFS) {
+                    requestFS.call(docEl).catch(err => {
+                        console.error("Erro ao ativar tela cheia:", err);
+                    });
+                }
+            } else {
+                const exitFS = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+                if (exitFS) {
+                    exitFS.call(document);
+                }
+            }
+        }
+
+        // Registrar listeners para capturar e sincronizar o estado da tela cheia nos ícones
+        const fsEvents = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'];
+        fsEvents.forEach(evt => {
+            document.addEventListener(evt, () => {
+                const isFS = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+                
+                // Atualizar ícones do mapa
+                document.querySelectorAll('.map-fullscreen-icon').forEach(icon => {
+                    if (isFS) {
+                        icon.classList.remove('fa-expand');
+                        icon.classList.add('fa-compress');
+                    } else {
+                        icon.classList.remove('fa-compress');
+                        icon.classList.add('fa-expand');
+                    }
+                });
+
+                // Atualizar ícones do header
+                document.querySelectorAll('.header-fullscreen-icon').forEach(icon => {
+                    if (isFS) {
+                        icon.classList.remove('fa-expand');
+                        icon.classList.add('fa-compress');
+                    } else {
+                        icon.classList.remove('fa-compress');
+                        icon.classList.add('fa-expand');
+                    }
+                });
+            });
+        });
 
         function switchSubAbaLegenda(abaName) {
             const abas = ['legenda', 'ajustes', 'offline', 'sincronia'];
@@ -7883,10 +8051,10 @@ supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY)
                 if (content && btn) {
                     if (aba === abaName) {
                         content.classList.remove('hidden');
-                        btn.className = "flex-1 py-2.5 text-center border-b-2 border-blue-600 text-blue-600 font-bold cursor-pointer transition-all flex items-center justify-center gap-1 bg-transparent border-none";
+                        btn.className = "flex-1 py-2 rounded-xl text-blue-700 bg-white shadow-sm font-bold cursor-pointer transition-all flex items-center justify-center gap-1.5 border-none";
                     } else {
                         content.classList.add('hidden');
-                        btn.className = "flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 font-bold cursor-pointer transition-all flex items-center justify-center gap-1 bg-transparent border-none";
+                        btn.className = "flex-1 py-2 rounded-xl text-slate-500 hover:text-slate-700 font-medium cursor-pointer transition-all flex items-center justify-center gap-1.5 bg-transparent border-none";
                     }
                 }
             });
